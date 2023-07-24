@@ -5,14 +5,19 @@ import folium
 from peewee import * 
 import datetime
 from playhouse.shortcuts import model_to_dict 
-from flask_cors import CORS
+# from flask_cors import CORS
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
 
 
-mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
+
+if os.getenv("TESTING") == "True":
+    print("Running in test mode")
+    mydb = SqliteDatabase("file:memory?mode=memory&cache=shared", uri=True)
+else:
+    mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
               user=os.getenv("MYSQL_USER"),
               password=os.getenv("MYSQL_PASSWORD"),
               host=os.getenv("MYSQL_HOST"),
@@ -20,7 +25,8 @@ mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
 
 )
 
-print(mydb)
+
+# print(mydb)
 
 
 class TimelinePost(Model):
@@ -260,11 +266,20 @@ def education(fellow):
 
 
 @app.route('/api/timeline_post', methods=['POST'])
-def post_time_line_post():
+def post_time_line_post(): 
     name = request.form['name']
     email = request.form['email']
     content = request.form['content']
+
+    if name == "" or name is None:
+        return "Invalid name", 400
+    if email == "" or email is None:
+        return "Invalid email", 400
+    if content == "" or content is None:
+        return "Invalid content", 400
+
     timeline_post = TimelinePost.create(name = name, email = email, content = content)
+    
     return model_to_dict(timeline_post)
 
 @app.route('/api/timeline_post', methods=['GET'])
