@@ -1,11 +1,5 @@
 #!/bin/bash
 
-
-if tmux list-sessions >/dev/null 2>&1; then
-    tmux kill-server
-fi
-
-
 cd "pe-portfolio-site-project"
 echo "$PWD"
 
@@ -21,13 +15,6 @@ else
     echo "Python virtual environment is not active."
 fi
 
-tmux new-session -d -s deploy
+systemctl restart myportfolio
 
-
-if tmux has-session -t 'deploy' >/dev/null 2>&1; then
-    echo "Tmux session 'deploy' is active."
-else
-    echo "Tmux session 'deploy' is not active."
-fi
-
-flask run --host=0.0.0.0
+systemctl status myportfolio
