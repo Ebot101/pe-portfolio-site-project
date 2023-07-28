@@ -1,32 +1,32 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import folium
 from peewee import * 
 import datetime
 from playhouse.shortcuts import model_to_dict 
-# from flask_cors import CORS
+from flask_cors import CORS
 
 load_dotenv()
 app = Flask(__name__)
-# CORS(app)
+CORS(app)
 
 
-
-if os.getenv("TESTING") == "True":
-    print("Running in test mode")
-    mydb = SqliteDatabase("file:memory?mode=memory&cache=shared", uri=True)
+if os.getenv('TESTING') == 'true':
+    print('Running in testing mode')
+    mydb = SqliteDatabase('file:memory?mode=memory&cache=shared',
+                          uri=True)
+    
 else:
     mydb = MySQLDatabase(os.getenv("MYSQL_DATABASE"),
-              user=os.getenv("MYSQL_USER"),
-              password=os.getenv("MYSQL_PASSWORD"),
-              host=os.getenv("MYSQL_HOST"),
-              port= 3306
+                user=os.getenv("MYSQL_USER"),
+                password=os.getenv("MYSQL_PASSWORD"),
+                host=os.getenv("MYSQL_HOST"),
+                port= 3306
 
 )
 
-
-# print(mydb)
+print(mydb)
 
 
 class TimelinePost(Model):
@@ -266,20 +266,23 @@ def education(fellow):
 
 
 @app.route('/api/timeline_post', methods=['POST'])
-def post_time_line_post(): 
-    name = request.form['name']
-    email = request.form['email']
-    content = request.form['content']
+def post_time_line_post():
+    form_data = request.form.to_dict()
 
-    if name == "" or name is None:
-        return "Invalid name", 400
-    if email == "" or email is None:
-        return "Invalid email", 400
-    if content == "" or content is None:
-        return "Invalid content", 400
 
-    timeline_post = TimelinePost.create(name = name, email = email, content = content)
+    if 'name' not in form_data:
+        return jsonify({'error': 'invalid name'}), 400
+
+
+    if ('email' not in form_data) or "@" not in form_data['email'] or ".com" not in form_data['email']:
+        return jsonify({'error': 'invalid email'}), 400
     
+    
+    if 'content' not in form_data:
+        return jsonify({'error': 'invalid content'}), 400
+
+
+    timeline_post = TimelinePost.create(name = form_data['name'], email = form_data['email'], content = form_data['content'])
     return model_to_dict(timeline_post)
 
 @app.route('/api/timeline_post', methods=['GET'])
