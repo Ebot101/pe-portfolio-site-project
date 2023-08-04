@@ -270,16 +270,16 @@ def post_time_line_post():
     form_data = request.form.to_dict()
 
 
-    if 'name' not in form_data:
-        return jsonify({'error': 'invalid name'}), 400
+    if 'name' not in form_data or form_data['name'] =="":
+        return jsonify({'error': 'Invalid name'}), 400
 
 
-    if ('email' not in form_data) or "@" not in form_data['email'] or ".com" not in form_data['email']:
-        return jsonify({'error': 'invalid email'}), 400
+    if ('email' not in form_data) or "@" not in form_data['email'] or ".com" not in form_data['email'] or form_data['email'] =="":
+        return jsonify({'error': 'Invalid email'}), 400
     
     
-    if 'content' not in form_data:
-        return jsonify({'error': 'invalid content'}), 400
+    if 'content' not in form_data or form_data['content'] =="":
+        return jsonify({'error': 'Invalid content'}), 400
 
 
     timeline_post = TimelinePost.create(name = form_data['name'], email = form_data['email'], content = form_data['content'])
